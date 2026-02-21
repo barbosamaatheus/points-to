@@ -57,23 +57,26 @@ public class Driver {
     private static void setCallGraph(String algorithm) {
         switch (algorithm.toUpperCase()) {
             case "CHA":
+                System.out.println("Enable CHA CG");
                 Options.v().setPhaseOption("cg.cha", "enabled:true");
                 Options.v().setPhaseOption("cg.spark", "enabled:false");
                 break;
-            case "SPARK":
-                Options.v().setPhaseOption("cg.spark", "enabled:true");
-
-                Options.v().setPhaseOption("cg.spark", "on-fly-cg:true");
-                break;
             case "RTA":
+                System.out.println("Enable RTA CG");
                 Options.v().setPhaseOption("cg.spark", "enabled:true");
                 Options.v().setPhaseOption("cg.spark", "rta:true");
                 Options.v().setPhaseOption("cg.spark", "on-fly-cg:false");
                 break;
             case "VTA":
+                System.out.println("Enable VTA CG");
                 Options.v().setPhaseOption("cg.spark", "enabled:true");
                 Options.v().setPhaseOption("cg.spark", "vta:true");
-                Options.v().setPhaseOption("cg.spark", "on-fly-cg:false");
+               // Options.v().setPhaseOption("cg.spark", "on-fly-cg:false");
+                break;
+            case "SPARK":
+                System.out.println("Enable Spark CG");
+                Options.v().setPhaseOption("cg.spark", "enabled:true");
+                //Options.v().setPhaseOption("cg.spark", "on-fly-cg:true");
                 break;
             default:
                 throw new IllegalArgumentException("Unknown algorithm: " + algorithm);
@@ -93,13 +96,14 @@ public class Driver {
     }
 
     private static String buildClassPath() {
-        String cp = System.getProperty("java.class.path");
+        //String cp = System.getProperty("java.class.path");
         String testClasses = new File("target/test-classes").getAbsolutePath();
         StringBuilder sb = new StringBuilder();
-        sb.append(testClasses).append(File.pathSeparator).append(testClasses);
-        if (cp != null && !cp.isEmpty()) {
-            sb.append(File.pathSeparator).append(cp);
-        }
+        sb.append(testClasses);
+        // String cp = System.getProperty("java.class.path");
+        // if (cp != null && !cp.isEmpty()) {
+        //     sb.append(File.pathSeparator).append(cp);
+        // }
         String rt = pathToRT();
         if (rt != null) {
             sb.append(File.pathSeparator).append(rt);

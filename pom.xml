@@ -20,9 +20,9 @@
     <dependencies>
         <!-- Soot - Java static analysis framework (3.3.0 = most recent 3.x; org.soot-oss only has 4.x) -->
         <dependency>
-            <groupId>ca.mcgill.sable</groupId>
+            <groupId>org.soot-oss</groupId>
             <artifactId>soot</artifactId>
-            <version>3.3.0</version>
+            <version>4.5.1</version>
         </dependency>
 
         <!-- JUnit 4 for testing -->

@@ -93,6 +93,7 @@ public final class AliasTransformer extends SceneTransformer {
         }
         PointsToSet pts1 = pta.reachingObjects(l1);
         PointsToSet pts2 = pta.reachingObjects(l2);
+        System.out.println(Scene.v().getCallGraph().size());
         return pts1.hasNonEmptyIntersection(pts2) ? Result.PTA_SUGGESTS_ALIAS : Result.PTA_NO_EVIDENCE_OF_ALIAS;
     }
 

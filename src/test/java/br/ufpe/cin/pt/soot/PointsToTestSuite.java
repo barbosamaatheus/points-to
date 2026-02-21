@@ -23,7 +23,8 @@ public class PointsToTestSuite {
 
     private final TestConfiguration configTestAliasForPoint2Point3 = new TestConfiguration("br.ufpe.cin.pt.samples.PointsToAnalysisEntry", "main", "br.ufpe.cin.pt.samples.PointTest", "testPoints", "point2", "point3");
 
-    @Ignore("Unexpected result [...]")
+    //@Ignore("Unexpected result [...]")
+    @Test
     public void testPointsToWithCHAP1P2() {
         assertEquals(
                 "I was expecting that CHA (without SPARK) would report NO_ALIAS for p1/p2, but it is reporting that they may alias.",
@@ -31,7 +32,8 @@ public class PointsToTestSuite {
                 new Driver().runAnalysis(configTestAliasForPoint1Point2.setCallGraph("CHA")));
     }
 
-    @Ignore("Unexpected result [...]")
+    //@Ignore("Unexpected result [...]")
+    @Test
     public void testPointsToWithCHAP2P3() {
         assertEquals(
             "I was expecting that CHA (without SPARK) would report NO_ALIAS for p1/p2, but it is reporting that they may alias.",
@@ -39,6 +41,43 @@ public class PointsToTestSuite {
             new Driver().runAnalysis(configTestAliasForPoint2Point3.setCallGraph("CHA")));
     }
 
+    //@Ignore("Memory issues [...]. I will fix this later.")
+    @Test
+    public void testPointsToWithRTAP1P2() {
+        assertEquals(
+                "RTA should report NO_ALIAS for p1/p2",
+                AliasTransformer.Result.PTA_NO_EVIDENCE_OF_ALIAS,
+                new Driver().runAnalysis(configTestAliasForPoint1Point2.setCallGraph("RTA")));
+    }
+
+    //@Ignore("Memory issues [...]. I will fix this later.")
+    @Test
+    public void testPointsToWithRTAP2P3() {
+        assertEquals(
+                "RTA should report NO_ALIAS for p2/p3",
+                AliasTransformer.Result.PTA_NO_EVIDENCE_OF_ALIAS,
+                new Driver().runAnalysis(configTestAliasForPoint2Point3.setCallGraph("RTA")));
+    }
+
+    //@Ignore("Unexpected result [...]")
+    @Test
+    public void testPointsToWithVTAP1P3() {
+        assertEquals(
+                "I was expecting that VTA (even with SPARK) would report NO_ALIAS for p1/p2, but it is reporting that they may alias.",
+                AliasTransformer.Result.PTA_NO_EVIDENCE_OF_ALIAS,
+                new Driver().runAnalysis(configTestAliasForPoint1Point2.setCallGraph("VTA")));
+    }
+
+    //@Ignore("Unexpected result [...]")
+    @Test
+    public void testPointsToWithVTAP2P3() {
+        assertEquals(
+                "I was expecting that VTA (even with SPARK) would report NO_ALIAS for p2/p2, but it is reporting that they may alias.",
+                AliasTransformer.Result.PTA_NO_EVIDENCE_OF_ALIAS,
+        new Driver().runAnalysis(configTestAliasForPoint2Point3.setCallGraph("VTA")));
+    }
+
+    //@Ignore
     @Test
     public void testPointsToWithSparkP1P2() {
         assertEquals(
@@ -47,43 +86,13 @@ public class PointsToTestSuite {
                 new Driver().runAnalysis(configTestAliasForPoint1Point2.setCallGraph("SPARK")));
     }
 
+    //@Ignore
     @Test
     public void testPointsToWithSparkP2P3() {
         assertEquals(
-            "Spark (precise) should report MAY_ALIAS for p2/p3",
+                "Spark (precise) should report MAY_ALIAS for p2/p3",
                 AliasTransformer.Result.PTA_SUGGESTS_ALIAS,
                 new Driver().runAnalysis(configTestAliasForPoint2Point3.setCallGraph("SPARK")));
     }
 
-    @Ignore("Memory issues [...]. I will fix this later.")
-    public void testPointsToWithRTAP1P2() {
-        assertEquals(
-                "RTA should report NO_ALIAS for p1/p2",
-                AliasTransformer.Result.PTA_NO_EVIDENCE_OF_ALIAS,
-                new Driver().runAnalysis(configTestAliasForPoint1Point2.setCallGraph("RTA")));
-    }
-
-    @Ignore("Memory issues [...]. I will fix this later.")
-    public void testPointsToWithRTAP2P3() {
-        assertEquals(
-                "RTA should report NO_ALIAS for p2/p3",
-                AliasTransformer.Result.PTA_NO_EVIDENCE_OF_ALIAS,
-                new Driver().runAnalysis(configTestAliasForPoint2Point3.setCallGraph("RTA")));
-    }
-
-    @Ignore("Unexpected result [...]")
-    public void testPointsToWithVTAP1P3() {
-        assertEquals(
-                "I was expecting that VTA (even with SPARK) would report NO_ALIAS for p1/p2, but it is reporting that they may alias.",
-                AliasTransformer.Result.PTA_NO_EVIDENCE_OF_ALIAS,
-                new Driver().runAnalysis(configTestAliasForPoint1Point2.setCallGraph("VTA")));
-    }
-
-    @Ignore("Unexpected result [...]")
-    public void testPointsToWithVTAP2P3() {
-        assertEquals(
-                "I was expecting that VTA (even with SPARK) would report NO_ALIAS for p2/p2, but it is reporting that they may alias.",
-                AliasTransformer.Result.PTA_NO_EVIDENCE_OF_ALIAS,
-        new Driver().runAnalysis(configTestAliasForPoint2Point3.setCallGraph("VTA")));
-    }
 }
