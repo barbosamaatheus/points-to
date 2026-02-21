@@ -1,6 +1,5 @@
-package br.ufpe.cin.pt;
+package br.ufpe.cin.pt.samples;
 
-import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Ignore;

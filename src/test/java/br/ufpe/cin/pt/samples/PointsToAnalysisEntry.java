@@ -1,4 +1,4 @@
-package br.ufpe.cin.pt;
+package br.ufpe.cin.pt.samples;
 
 /**
  * Entry point for Soot whole-program analysis. Invokes the method under analysis
@@ -6,6 +6,7 @@ package br.ufpe.cin.pt;
  */
 public class PointsToAnalysisEntry {
     public static void main(String[] args) {
-        new PointTest().testPoints();
+        PointTest test = new PointTest();
+        test.testPoints();
     }
 }

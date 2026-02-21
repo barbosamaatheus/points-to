@@ -1,4 +1,4 @@
-package br.ufpe.cin.pt;
+package br.ufpe.cin.pt.samples;
 
 public class Point {
 
