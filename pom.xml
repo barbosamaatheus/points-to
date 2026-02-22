@@ -63,7 +63,7 @@
                         <include>**/*TestCase.java</include>
                         <include>**/*TestSuite.java</include>
                     </includes>
-                    <!-- Run Soot tests in separate JVMs to avoid Soot's static timer state -->
+                    <!-- One JVM per test class (reuseForks=false) so Qilin/Soot static state does not leak between tests -->
                     <forkCount>4</forkCount>
                     <reuseForks>false</reuseForks>
                 </configuration>

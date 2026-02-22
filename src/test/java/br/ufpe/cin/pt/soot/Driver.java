@@ -55,7 +55,7 @@ public class Driver {
         Options.v().set_no_bodies_for_excluded(true);
         Options.v().set_allow_phantom_refs(true);
         Options.v().set_include(getIncludeList());
-        Options.v().set_exclude(getExcludeList());  // JDK internals (e.g. sun.misc.Launcher) as phantoms
+        Options.v().set_exclude(getExcludeList());  // jdk.internal.* only; sun.*/com.sun.* must resolve for Qilin PAG
         Options.v().set_output_format(Options.output_format_none);
         Options.v().set_whole_program(true);
         Options.v().set_soot_classpath(classpath);
@@ -149,6 +149,7 @@ public class Driver {
      */
     private static PTA createQilinPTA(CallGraphAlgorithm algorithm) {
         String pattern = qilinPtaPatternFor(algorithm);
+        PTAConfig.reset();
         PTAConfig.v().getPtaConfig().ptaPattern = new PTAPattern(pattern);
         return PTAFactory.createPTA(PTAConfig.v().getPtaConfig().ptaPattern);
     }
@@ -161,15 +162,16 @@ public class Driver {
 
     /** Include list so these packages are treated as application classes (SVFA pattern). */
     private static List<String> getIncludeList() {
-        return Arrays.asList("br.ufpe.cin.pt.*");
+        return Arrays.asList("br.ufpe.cin.pt.*", "sun.misc.*");
     }
 
     /**
-     * Exclude list so JDK-internal types (e.g. sun.misc.Launcher$AppClassLoader) are not resolved;
-     * they remain phantom and do not cause RuntimeException when referenced.
+     * Exclude list: only jdk.internal.* (Java 9+). Do not exclude sun.* or com.sun.* — Qilin's PAG
+     * requires those types to be resolved when it creates nodes (e.g. for sun.misc.Launcher$AppClassLoader).
+     * They are resolved from the JDK (rt.jar on Java 8) when on the classpath.
      */
     private static List<String> getExcludeList() {
-        return Arrays.asList("sun.", "com.sun.", "jdk.internal.");
+        return Arrays.asList("jdk.internal.");
     }
 
     /** Entry points for the call graph (SVFA pattern: main method of entry class). */

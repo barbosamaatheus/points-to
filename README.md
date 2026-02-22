@@ -1,6 +1,6 @@
 # Points-to and Call Graph
 
-This project explores **the impact of the call graph on points-to relationships** using [Soot](https://soot-oss.github.io/soot/) 4 (org.soot-oss:soot, e.g. 4.4.1). We focus on a single test scenario, `PointTest.testPoints()`, and compare how different call-graph configurations affect the points-to information that Soot produces.
+This project explores **the impact of the call graph on points-to relationships** using [Soot](https://soot-oss.github.io/soot/) 4 (org.soot-oss:soot) and [Qilin](https://github.com/rbonifacio/QilinPTA) (our fork of [QilinPTA/Qilin](https://github.com/QilinPTA/Qilin), where we downgrade the build from newer Java versions to Java 8). It focuses on a single test scenario, `PointTest.testPoints()`, and compares how different call-graph and points-to configurations affect the resulting alias information.
 
 A notable finding: for some imprecise algorithms (e.g. **CHA**), Soot still populates points-to information **even when Spark is disabled** in the configuration. That is, the call graph alone (CHA) drives a form of points-to result that we can query.
 
@@ -28,9 +28,9 @@ The analysis entry point is `PointsToAnalysisEntry.main()`, which invokes `new P
 
 ---
 
-## Call Graph Configurations (Driver)
+## Call Graph and PTA Configurations (Driver)
 
-Call graph (and, when used, points-to) is configured in the **`Driver`** class (`br.ufpe.cin.pt.soot.Driver`) via `setCallGraph(algorithm)`:
+Call graph and points-to analysis are configured in the **`Driver`** class (`br.ufpe.cin.pt.soot.Driver`) via `setCallGraph(algorithm)`:
 
 | Algorithm | Configuration |
 |-----------|----------------|
@@ -38,6 +38,7 @@ Call graph (and, when used, points-to) is configured in the **`Driver`** class (
 | **SPARK** | `cg.spark` enabled, `on-fly-cg:true`. Spark builds the call graph on the fly with its points-to analysis. |
 | **RTA**   | `cg.spark` enabled, `rta:true`, `on-fly-cg:false`. Rapid Type Analysis style. |
 | **VTA**   | `cg.spark` enabled, `vta:true`, `on-fly-cg:false`. Variable Type Analysis style. |
+| **QILIN_INSENS** | Soot’s CHA and Spark disabled; Qilin runs its context-insensitive PTA and builds the call graph. |
 
 Relevant snippet from `Driver.setCallGraph()`:
 
@@ -59,7 +60,7 @@ So for **CHA**, Spark is explicitly turned off; for **SPARK**, **RTA**, and **VT
 
 ## Test Suite: Purpose and Structure
 
-The **`PointsToTestSuite`** (`br.ufpe.cin.pt.soot.PointsToTestSuite`) has two goals:
+The **`PointsToTestSuite`** (`br.ufpe.cin.pt.testsuite.PointsToTestSuite`) has two goals:
 
 1. **Document observed behaviour** – For each call-graph configuration (CHA, SPARK, RTA, VTA) and each pair of locals, the tests encode what the current Soot setup reports (no evidence of alias vs suggests alias). This gives a clear, executable record of how the call graph affects points-to in this scenario.
 2. **Regression and exploration** – Tests that pass act as regression tests; tests that are `@Ignore`d document surprising or not-yet-understood results (or environment issues) without failing the build.
@@ -69,7 +70,7 @@ Each test runs the **Driver** with a **`TestConfiguration`** that specifies:
 - Entry class and method (e.g. `PointsToAnalysisEntry.main`)
 - Target class and method (`PointTest.testPoints()`)
 - The two locals to check for may-alias
-- The call graph algorithm (CHA, SPARK, RTA, VTA)
+- The call graph / PTA algorithm (CHA, SPARK, RTA, VTA, QILIN_INSENS)
 
 There are two configurations:
 
@@ -101,29 +102,38 @@ Several tests are marked **`@Ignore`** so that the suite still documents expecta
 
 - **testPointsToWithSparkP1P2** – Spark reports no evidence of alias for point1 vs point2 (as expected).
 - **testPointsToWithSparkP2P3** – Spark reports may-alias for point2 vs point3 (as expected).
-- **testPointsToQilinINSENSP2P3** – Qilin context-insensitive PTA reports may-alias for point2 vs point3 (requires Soot 4, org.soot-oss:soot).
+- **testPointsToQilinINSENSP1P2** – Qilin context-insensitive PTA reports no alias for point1 vs point2 (`PointsToTestSuiteQilinP1P2Test`, runs in its own JVM).
+- **testPointsToQilinINSENSP2P3** – Qilin context-insensitive PTA reports may-alias for point2 vs point3 (`PointsToTestSuiteQilinP2P3Test`, runs in its own JVM).
 
-So the suite both validates Spark on this scenario and keeps a written record of CHA, RTA, and VTA behaviour (and known issues) via ignored tests.
+The two Qilin tests live in separate test classes so that each runs in a fresh JVM (Surefire `reuseForks=false`), avoiding static state issues between runs. The suite validates Spark and Qilin on this scenario and keeps a written record of CHA, RTA, and VTA behaviour (and known issues) via ignored tests.
 
 ---
 
 ### Running the tests
 
+**Use Java 8 to run tests.** Soot/ASM do not support Java 21 bytecode; on Java 21 you will see `Unsupported class file major version 65`. Switch to JDK 8 and run:
+
 ```bash
-mvn test
+export JAVA_HOME=/path/to/jdk8   # or use jenv/sdkman to select Java 8
+mvn clean test
 ```
+
+`mvn clean test-compile` first ensures test classes (including `CallGraphAlgorithm` and `PointTest`) are compiled by Maven; without a clean build, stale IDE class files can cause “CallGraphAlgorithm cannot be resolved” at test time.
 
 ---
 
 ## Project Layout
 
+All packages live under `br.ufpe.cin.pt` (test source root: `src/test/java/`).
+
 - **`samples`** – Scenario code: `PointTest`, `Point`, `PointsToAnalysisEntry`.
-- **`soot`** – Soot wiring and tests: `Driver`, `AliasTransformer`, `TestConfiguration`, `PointsToTestSuite`.
+- **`soot`** – Soot/Qilin wiring: `Driver`, `AliasTransformer`, `TestConfiguration`, and `pta` (SootPTA, QilinPTA, PTASingleton).
+- **`testsuite`** – Test suites (same level as `soot`): `PointsToTestSuite` (Spark, CHA, RTA, VTA), `PointsToTestSuiteQilinP1P2Test`, `PointsToTestSuiteQilinP2P3Test`.
 
 ---
 
 ## Requirements
 
-- **Java 8–11** recommended for running analysis (Soot 4.x may support newer JDKs; on Java 21+ you may see “Unsupported class file major version 65” with older Soot 4.3—try 4.4.1 or 4.7.0). For JDK 8, `rt.jar` is expected on the classpath when resolving the JDK.
-- **Soot 4** (org.soot-oss:soot) is required; Qilin is built against Soot 4’s API (e.g. `Scene.getTypeNumberer()`).
-- Maven 3.x.
+- **Java 8–11** recommended (Soot 4.x may support newer JDKs; on Java 21+ you may see “Unsupported class file major version 65” with older Soot 4.3—use 4.4.1 or newer). For JDK 8, `rt.jar` is expected on the classpath when resolving the JDK.
+- **Soot 4** (org.soot-oss:soot) is required; the [Qilin](https://github.com/rbonifacio/QilinPTA) dependency (our fork, built for Java 8) is built against Soot 4’s API.
+- **Maven 3.x.**

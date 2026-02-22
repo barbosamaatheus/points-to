@@ -1,9 +1,12 @@
-package br.ufpe.cin.pt.soot;
+package br.ufpe.cin.pt.testsuite;
 
 import static org.junit.Assert.assertEquals;
 
 import br.ufpe.cin.pt.samples.PointTest;
-import br.ufpe.cin.pt.soot.CallGraphAlgorithm.*;
+import br.ufpe.cin.pt.soot.AliasTransformer;
+import br.ufpe.cin.pt.soot.CallGraphAlgorithm;
+import br.ufpe.cin.pt.soot.Driver;
+import br.ufpe.cin.pt.soot.TestConfiguration;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -52,7 +55,7 @@ public class PointsToTestSuite {
     @Test
     public void testPointsToWithSparkP2P3() {
         assertEquals(
-            "Spark (precise) should report MAY_ALIAS for p2/p3",
+                "Spark (precise) should report MAY_ALIAS for p2/p3",
                 AliasTransformer.Result.PTA_SUGGESTS_ALIAS,
                 new Driver().runAnalysis(configTestAliasForPoint2Point3.setCallGraph(CallGraphAlgorithm.SOOT_SPARK)));
     }
@@ -89,11 +92,6 @@ public class PointsToTestSuite {
         new Driver().runAnalysis(configTestAliasForPoint2Point3.setCallGraph(CallGraphAlgorithm.SOOT_VTA)));
     }
 
-    @Ignore
-    public void testPointsToQilinINSENSP2P3() {
-        assertEquals(
-                "Qilin context-insensitive PTA should report MAY_ALIAS for point2/point3 (point3 = point2).",
-                AliasTransformer.Result.PTA_SUGGESTS_ALIAS,
-                new Driver().runAnalysis(configTestAliasForPoint2Point3.setCallGraph(CallGraphAlgorithm.QILIN_INSENS)));
-    }
+    // Qilin tests in PointsToTestSuiteQilinP1P2Test and PointsToTestSuiteQilinP2P3Test (this package);
+    // each runs in a fresh JVM (Surefire forks per test class), avoiding static state issues.
 }

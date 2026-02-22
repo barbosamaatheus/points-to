@@ -1,6 +1,6 @@
 package br.ufpe.cin.pt.soot;
 
-class TestConfiguration {
+public class TestConfiguration {
     String entryClass;
     String entryMethod;
     String targetClass;
